@@ -4,6 +4,7 @@ packages
 library(tidyverse)
 library(cmdstanr)
 library(readxl)
+library(posterior)
 source("functions.R")
 ```
 
@@ -74,5 +75,37 @@ fit$summary() %>%
   left_join(lookup) %>% 
   select(team, mean, variable) %>% 
   arrange(desc(mean))
+```
+
+read fixtures
+
+```{r}
+fixtures <- read_fixtures(workbook, sheet, lookup)
+fixtures
+```
+
+draws (from posterior)
+
+```{r}
+ll <- get_draws(fit)
+draws <- ll$draws
+draws_with_team <- ll$draws_with_team
+```
+
+
+```{r}
+ppd <- make_ppd(draws, draws_with_team, 9, 1)
+ppd
+```
+
+```{r}
+ppd_stats(ppd)
+```
+
+
+
+```{r}
+ggplot(ppd, aes(x = sc1, y = sc2)) + geom_jitter(alpha = 0.4) +
+  geom_abline(slope = 1, intercept = 0)
 ```
 
