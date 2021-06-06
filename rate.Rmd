@@ -1,0 +1,78 @@
+packages
+
+```{r}
+library(tidyverse)
+library(cmdstanr)
+library(readxl)
+source("functions.R")
+```
+
+```{r}
+workbook <- "scores.xlsx"
+sheet <- "super-league"
+sheet <- "championship"
+sheet <- "league-1"
+scores <- read_scores(workbook, sheet)
+scores
+```
+
+
+```{r}
+lookup <- make_lookup_table(scores)
+lookup
+```
+
+convert team names to numbers
+
+```{r}
+scores %>% 
+  left_join(lookup, by = c("t1"="team")) %>% 
+  left_join(lookup, by = c("t2"="team")) %>% 
+  select(t1 = id.x, t2 = id.y, s1, s2) -> scores_stan
+scores_stan
+```
+
+make stan dataset
+
+```{r}
+scores_stan
+```
+
+compile model
+
+```{r}
+rl.1 <- cmdstan_model("poisson.stan")
+rl.1
+write_rds(rl.1, "rl_model.rds")
+```
+
+make data
+
+```{r}
+# scores_stan
+stan_data <- list(
+  ng = nrow(scores_stan),
+  nt = with(scores_stan, max(t1, t2)),
+  t1 = scores_stan$t1,
+  t2 = scores_stan$t2,
+  s1 = scores_stan$s1,
+  s2 = scores_stan$s2
+)
+stan_data
+```
+
+run model
+
+```{r}
+fit <- rl.1$sample(data = stan_data)
+```
+
+```{r}
+fit$summary() %>% 
+  select(variable, mean) %>% 
+  mutate(id = parse_number(variable)) %>% 
+  left_join(lookup) %>% 
+  select(team, mean, variable) %>% 
+  arrange(desc(mean))
+```
+

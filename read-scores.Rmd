@@ -1,0 +1,21 @@
+packages
+
+```{r}
+library(tidyverse)
+library(readxl)
+source("functions.R")
+```
+
+
+
+read scores
+
+```{r}
+scores <- read_scores("scores.xlsx", sheet = "league-1")
+scores
+```
+
+```{r}
+scores <- read_scores("scores.xlsx", sheet = "championship")
+scores
+```
