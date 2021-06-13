@@ -11,8 +11,8 @@ source("functions.R")
 ```{r}
 workbook <- "scores.xlsx"
 sheet <- "super-league"
-sheet <- "championship"
-sheet <- "league-1"
+# sheet <- "championship"
+# sheet <- "league-1"
 scores <- read_scores(workbook, sheet)
 scores
 ```
@@ -69,12 +69,16 @@ fit <- rl.1$sample(data = stan_data)
 ```
 
 ```{r}
+rat_name <- str_c(sheet, " ratings")
 fit$summary() %>% 
   select(variable, mean) %>% 
   mutate(id = parse_number(variable)) %>% 
   left_join(lookup) %>% 
   select(team, mean, variable) %>% 
-  arrange(desc(mean))
+  mutate(mean = exp(mean)) %>% 
+  arrange(desc(mean)) %>% 
+  View(rat_name)
+  
 ```
 
 read fixtures
@@ -103,9 +107,18 @@ ppd_stats(ppd)
 ```
 
 
-
 ```{r}
-ggplot(ppd, aes(x = sc1, y = sc2)) + geom_jitter(alpha = 0.4) +
-  geom_abline(slope = 1, intercept = 0)
+pred_name <- str_c(sheet, " preds")
+fixtures %>% 
+  rowwise() %>% 
+  mutate(ppd = list(make_ppd(draws, draws_with_team, id.x, id.y))) %>% 
+  mutate(stats = list(ppd_stats(ppd))) %>% 
+  unnest_wider(stats) %>% 
+  unnest_wider(prob) %>% 
+  unnest_wider(means) %>% 
+  select(t1, t2, `1`, `2`, X, m1, m2) %>% 
+  View(pred_name)
 ```
+
+
 
