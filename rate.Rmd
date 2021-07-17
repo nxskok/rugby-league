@@ -10,9 +10,9 @@ source("functions.R")
 
 ```{r}
 workbook <- "scores.xlsx"
-sheet <- "super-league"
+# sheet <- "super-league"
 # sheet <- "championship"
-# sheet <- "league-1"
+sheet <- "league-1"
 scores <- read_scores(workbook, sheet)
 scores
 ```
@@ -116,9 +116,11 @@ fixtures %>%
   unnest_wider(stats) %>% 
   unnest_wider(prob) %>% 
   unnest_wider(means) %>% 
-  select(t1, t2, `1`, `2`, X, m1, m2) %>% 
+  round_score() %>% 
+  select(t1, t2, `1`, `2`, X, s1, s2) %>% 
   View(pred_name)
 ```
+
 
 
 

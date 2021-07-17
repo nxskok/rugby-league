@@ -34,6 +34,21 @@ read_fixtures <- function(workbook, sheet, lookup) {
     left_join(lookup, by = c("t2" = "team"))
 }
 
+round_to_even <- function(x) {
+  2 * round(x/2)
+}
+
+round_score <- function(d) {
+  # d is df with m1 and m2 in it
+  d %>% 
+    mutate(s1 = round_to_even(m1),
+           s2 = round_to_even(m2),
+           g  = (m1 >= m2),
+           s1 = ifelse(((s1 == s2) & g),  s1+1, s1),
+           s2 = ifelse(((s1 == s2) & !g), s2+1, s2)) %>% 
+    select(-g)
+}
+
 make_ppd <- function(draws, draws_with_team, t1_id, t2_id) {
   draws_with_team %>% 
     filter(team == t1_id) %>% 
