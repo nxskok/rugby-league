@@ -6,13 +6,15 @@ library(cmdstanr)
 library(readxl)
 library(posterior)
 source("functions.R")
+options(mc.cores=4)
 ```
 
 ```{r}
-workbook <- "scores.xlsx"
-# sheet <- "super-league"
-# sheet <- "championship"
-sheet <- "league-1"
+workbook <- "~/Documents/rugby_league-2022.xlsx"
+# sheet <- "Super League"
+# sheet <- "Championship"
+sheet <- "League 1"
+# sheet <- "NRL"
 scores <- read_scores(workbook, sheet)
 scores
 ```
@@ -65,7 +67,7 @@ stan_data
 run model
 
 ```{r}
-fit <- rl.1$sample(data = stan_data)
+fit <- rl.1$sample(data = stan_data, iter_sampling = 10000)
 ```
 
 ```{r}

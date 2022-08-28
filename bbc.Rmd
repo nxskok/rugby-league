@@ -1,0 +1,43 @@
+
+# bbc scores
+
+```{r}
+library(tidyverse)
+library(rvest)
+```
+
+```{r}
+url <- "https://www.bbc.com/sport/rugby-league/scores-fixtures"
+html <- read_html(url)
+```
+
+#betfred-championship-nullround-container > ul > li:nth-child(4) > a > article > div > span.sp-c-fixture__team.sp-c-fixture__team--home > span.sp-c-fixture__team-name.sp-c-fixture__team-name--home > span > span
+#betfred-championship-nullround-container > ul > li:nth-child(4) > a > article > div > span.sp-c-fixture__team.sp-c-fixture__team--home > span.sp-c-fixture__team-name.sp-c-fixture__team-name--home > span > abbr
+
+
+
+
+
+```{r}
+html %>% html_elements("article abbr") -> abbrs
+abbrs %>% html_attr("title") -> titles
+abbrs %>% html_attr("class") -> classes
+tibble(classes, titles) %>% 
+  filter(str_detect(classes, "sp-c-fixture")) %>% select(team = titles) -> teams
+teams
+```
+
+#betfred-championship-nullround-container > ul > li:nth-child(3) > a > article > div > span.sp-c-fixture__team.sp-c-fixture__team--home > span.sp-c-fixture__block > span
+
+```{r}
+html %>% html_elements("span.sp-c-fixture__block") %>% html_text() -> scores
+ng <- nrow(teams) %/% 2
+# ng
+teams %>% mutate(score = scores) %>% 
+  mutate(col = rep(1:2, times = ng),
+         row = rep(1:ng, each = 2),
+         item = str_c(team, " ", score)) %>% 
+  select(item, row, col) %>% 
+  pivot_wider(names_from = col, values_from = item) %>% View("scores")
+```
+
